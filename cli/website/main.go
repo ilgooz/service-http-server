@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	serverAddr = flag.String("addr", ":2300", "Server's listening address")
+	serverAddr = flag.String("serverAddr", ":2300", "Server's listening address")
 )
 
 func main() {
