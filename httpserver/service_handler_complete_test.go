@@ -4,19 +4,24 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-func TestCompleteSessionSuccess(t *testing.T) {
+func TestPlainTextResponse(t *testing.T) {
 	w, server := newHTTPServerAndServer(t)
 
 	go server.Start()
 	go w.Start()
+	defer w.Close()
 
+	var wg sync.WaitGroup
+
+	wg.Add(1)
 	go func() {
-		defer w.Close()
+		defer wg.Done()
 
 		event := <-server.LastEmit()
 		var data requestEventData
@@ -43,6 +48,8 @@ func TestCompleteSessionSuccess(t *testing.T) {
 	data, err := ioutil.ReadAll(resp.Body)
 	require.NoError(t, err)
 	require.Equal(t, "hello world!", string(data))
+
+	wg.Wait()
 }
 
 func TestCompleteSessionError(t *testing.T) {
