@@ -65,6 +65,10 @@ func (s *HTTPServerService) completeSessionHandler(execution *mesg.Execution) (s
 	defer s.removeSession(se.id)
 	defer se.done()
 
+	if inputs.MIMEType != "" {
+		se.w.Header().Set("Content-Type", inputs.MIMEType)
+	}
+
 	if inputs.Code != 0 {
 		se.w.WriteHeader(inputs.Code)
 	} else {
