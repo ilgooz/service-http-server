@@ -1,0 +1,61 @@
+name: website
+description: serve your website over http
+repository: https://github.com/ilgooz/service-website
+events:
+  request:
+    description: This event is emited on every page request.
+    data:
+      sessionID:
+        description: Session ID of corresponding page request
+        type: String
+      method:
+        description: Method of HTTP request.
+        type: String
+      host:
+        description: Host of HTTP request.
+        type: String
+      path:
+        description: Path of HTTP request.
+        type: String
+      ip:
+        description: IP address of HTTP request.
+        type: String
+tasks:
+  completeSession:
+    description: This task should be called to response a pending page requests.
+    inputs:
+      sessionID:
+        description: Session ID of corresponding page request
+        type: String
+      error:
+        description: Error should be used to response with pre-existing errors
+        type: Object
+        optional: true
+      code:
+        description: Status code of HTTP response.
+        type: Number
+        optional: true
+      mimeType:
+        description: MIME type of HTTP response.
+        type: String
+        optional: true
+      content:
+        description: Content of HTTP response.
+        type: String
+        optional: true
+    outputs:
+      success:
+        data:
+          sessionID:
+            description: Session ID of corresponding page request
+            type: String
+          elapsedTime:
+            description: Elapsed time in nanoseconds for page request to complete
+            type: String
+      error:
+        data:
+          message:
+            type: String
+configuration:
+  ports:
+    - "2300"
