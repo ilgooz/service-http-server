@@ -1,4 +1,4 @@
-package website
+package httpserver
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 )
 
 func TestCompleteSessionSuccess(t *testing.T) {
-	w, server := newWebsiteAndServer(t)
+	w, server := newHTTPServerAndServer(t)
 
 	go server.Start()
 	go w.Start()
@@ -50,7 +50,7 @@ func TestCompleteSessionError(t *testing.T) {
 		data = completeSessionInputs{
 			SessionID: "not-exists",
 		}
-		w, server = newWebsiteAndServer(t)
+		w, server = newHTTPServerAndServer(t)
 	)
 
 	go server.Start()

@@ -1,6 +1,6 @@
-name: website
-description: serve your website over http
-repository: https://github.com/ilgooz/service-website
+name: http-server
+description: serve your content over http
+repository: https://github.com/ilgooz/service-http-server
 events:
   request:
     description: This event is emited on every page request.
@@ -51,7 +51,7 @@ tasks:
             type: String
           elapsedTime:
             description: Elapsed time in nanoseconds for page request to complete
-            type: String
+            type: Number
       error:
         data:
           message:

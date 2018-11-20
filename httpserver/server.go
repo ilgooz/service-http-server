@@ -1,4 +1,4 @@
-package website
+package httpserver
 
 import (
 	"context"
@@ -6,12 +6,12 @@ import (
 	"net/http"
 )
 
-func (s *WebsiteService) startHTTPServer() error {
+func (s *HTTPServerService) startHTTPServer() error {
 	s.server = &http.Server{Handler: s}
 	return s.server.Serve(s.ln)
 }
 
-func (s *WebsiteService) shutdownHTTPServer() error {
+func (s *HTTPServerService) shutdownHTTPServer() error {
 	ctx, cancel := context.WithTimeout(context.Background(), s.serverShutdownTimeout)
 	defer cancel()
 	return s.server.Shutdown(ctx)
@@ -35,7 +35,7 @@ type requestEventData struct {
 	IP string `json:"ip"`
 }
 
-func (s *WebsiteService) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (s *HTTPServerService) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	se, err := newSession(w, req)
 	if err != nil {
 		log.Println(err)
@@ -47,6 +47,7 @@ func (s *WebsiteService) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		Method:    req.Method,
 		Host:      req.Host,
 		Path:      req.URL.Path,
+		IP:        req.RemoteAddr,
 	}); err != nil {
 		log.Println(err)
 		s.removeSession(se.id)

@@ -1,4 +1,4 @@
-package website
+package httpserver
 
 import (
 	"testing"
@@ -13,7 +13,7 @@ const (
 	endpoint = "endpoint"
 )
 
-func newWebsiteAndServer(t *testing.T) (*WebsiteService, *mesgtest.Server) {
+func newHTTPServerAndServer(t *testing.T) (*HTTPServerService, *mesgtest.Server) {
 	testServer := mesgtest.NewServer()
 	service, err := mesg.New(
 		mesg.DialOption(testServer.Socket()),

@@ -1,4 +1,4 @@
-package website
+package httpserver
 
 import (
 	"errors"
@@ -52,7 +52,7 @@ type completeSessionSuccessOutputs struct {
 
 // completeSessionHandler is a task handler to complete a waiting request by
 // sending a response to it with content, code, headers, MIME types and other configs.
-func (s *WebsiteService) completeSessionHandler(execution *mesg.Execution) (string, mesg.Data) {
+func (s *HTTPServerService) completeSessionHandler(execution *mesg.Execution) (string, mesg.Data) {
 	var inputs completeSessionInputs
 	if err := execution.Data(&inputs); err != nil {
 		return newErrorOutput(err)

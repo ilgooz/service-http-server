@@ -1,5 +1,5 @@
 FROM golang:1.10.4
-WORKDIR /go/src/github.com/ilgooz/service-website
+WORKDIR /go/src/github.com/ilgooz/service-http-server
 COPY . .
 RUN go install ./...
-CMD website --serverAddr :2300
+CMD httpserver --serverAddr :2300

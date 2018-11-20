@@ -1,4 +1,4 @@
-package website
+package httpserver
 
 import mesg "github.com/mesg-foundation/go-service"
 
@@ -13,7 +13,7 @@ const (
 )
 
 // listenTasks starts listening for service's tasks.
-func (s *WebsiteService) listenTasks() error {
+func (s *HTTPServerService) listenTasks() error {
 	return s.s.Listen(
 		mesg.Task(completeSessionTaskKey, s.completeSessionHandler),
 	)

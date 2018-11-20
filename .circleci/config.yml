@@ -3,7 +3,7 @@ version: 2
 runOnDocker: &runOnDocker
   docker:
     - image: circleci/golang:1.10
-  working_directory: /go/src/github.com/ilgooz/service-website
+  working_directory: /go/src/github.com/ilgooz/service-http-server
 
 jobs:
   "test":

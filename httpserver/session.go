@@ -1,4 +1,4 @@
-package website
+package httpserver
 
 import (
 	"net/http"
@@ -45,20 +45,20 @@ func (s *session) done() {
 	close(s.waitC)
 }
 
-func (s *WebsiteService) addSession(id string, se *session) {
+func (s *HTTPServerService) addSession(id string, se *session) {
 	s.ms.Lock()
 	defer s.ms.Unlock()
 	s.sessions[id] = se
 }
 
-func (s *WebsiteService) getSession(id string) (se *session, found bool) {
+func (s *HTTPServerService) getSession(id string) (se *session, found bool) {
 	s.ms.Lock()
 	defer s.ms.Unlock()
 	se, ok := s.sessions[id]
 	return se, ok
 }
 
-func (s *WebsiteService) removeSession(id string) {
+func (s *HTTPServerService) removeSession(id string) {
 	s.ms.Lock()
 	defer s.ms.Unlock()
 	delete(s.sessions, id)
