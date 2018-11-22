@@ -1,5 +1,5 @@
 name: http-server
-description: serve your content over http
+description: serve content over http
 repository: https://github.com/ilgooz/service-http-server
 events:
   request:

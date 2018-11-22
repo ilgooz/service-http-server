@@ -1,8 +1,6 @@
 ## service-http-server [![CircleCI](https://img.shields.io/circleci/project/github/ilgooz/service-http-server.svg)](https://github.com/ilgooz/service-http-server) [![codecov](https://codecov.io/gh/ilgooz/service-http-server/branch/master/graph/badge.svg)](https://codecov.io/gh/ilgooz/service-http-server)
 A MESG service to serve content over HTTP.
 
-serve your content over http
-
 ```bash
 mesg-core service deploy https://github.com/ilgooz/service-http-server
 ```
