@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	mesg "github.com/mesg-foundation/go-service"
+	"github.com/mesg-foundation/core/client/service"
 )
 
 const completeSessionSuccessOutputKey = "success"
@@ -52,7 +52,7 @@ type completeSessionSuccessOutputs struct {
 
 // completeSessionHandler is a task handler to complete a waiting request by
 // sending a response to it with content, code, headers, MIME types and other configs.
-func (s *HTTPServerService) completeSessionHandler(execution *mesg.Execution) (string, mesg.Data) {
+func (s *HTTPServerService) completeSessionHandler(execution *service.Execution) (string, interface{}) {
 	var inputs completeSessionInputs
 	if err := execution.Data(&inputs); err != nil {
 		return newErrorOutput(err)

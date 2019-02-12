@@ -7,8 +7,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/mesg-foundation/go-service/mesgtest"
-
+	"github.com/mesg-foundation/core/client/service/servicetest"
 	"github.com/stretchr/testify/require"
 )
 
@@ -57,7 +56,7 @@ func TestResponses(t *testing.T) {
 	}
 }
 
-func testRequest(t *testing.T, server *mesgtest.Server, hs *HTTPServerService, req request) {
+func testRequest(t *testing.T, server *servicetest.Server, hs *HTTPServerService, req request) {
 	t.Parallel()
 
 	var wg sync.WaitGroup

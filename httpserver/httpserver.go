@@ -7,12 +7,12 @@ import (
 	"sync"
 	"time"
 
-	mesg "github.com/mesg-foundation/go-service"
+	"github.com/mesg-foundation/core/client/service"
 )
 
 // HTTPServerService is a MESG service to serve content over HTTP.
 type HTTPServerService struct {
-	s *mesg.Service
+	s *service.Service
 
 	ListeningAddr         string
 	serverShutdownTimeout time.Duration
@@ -25,7 +25,7 @@ type HTTPServerService struct {
 }
 
 // New creates a new http server service with given mesg service.
-func New(service *mesg.Service, listeningAddr string) (*HTTPServerService, error) {
+func New(service *service.Service, listeningAddr string) (*HTTPServerService, error) {
 	s := &HTTPServerService{
 		s:                     service,
 		sessions:              make(map[string]*session),

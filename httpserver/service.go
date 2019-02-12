@@ -1,6 +1,8 @@
 package httpserver
 
-import mesg "github.com/mesg-foundation/go-service"
+import (
+	"github.com/mesg-foundation/core/client/service"
+)
 
 // list of task keys:
 const (
@@ -15,7 +17,7 @@ const (
 // listenTasks starts listening for service's tasks.
 func (s *HTTPServerService) listenTasks() error {
 	return s.s.Listen(
-		mesg.Task(completeSessionTaskKey, s.completeSessionHandler),
+		service.Task(completeSessionTaskKey, s.completeSessionHandler),
 	)
 }
 
@@ -28,6 +30,6 @@ type errorOutput struct {
 }
 
 // newErrorOutput returns a new error output from given err.
-func newErrorOutput(err error) (outputKey string, outputData mesg.Data) {
+func newErrorOutput(err error) (outputKey string, outputData interface{}) {
 	return errOutputKey, errorOutput{Message: err.Error()}
 }

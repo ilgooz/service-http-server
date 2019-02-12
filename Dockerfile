@@ -1,5 +1,7 @@
-FROM golang:1.10.4
-WORKDIR /go/src/github.com/ilgooz/service-http-server
+FROM golang:1.11.4
+WORKDIR /project
+COPY go.mod go.sum ./
+RUN go mod download
 COPY . .
-RUN go install ./...
-CMD httpserver --serverAddr :2300
+RUN go build ./cli/httpserver/main.go
+CMD ["./main"]

@@ -3,8 +3,8 @@ package httpserver
 import (
 	"testing"
 
-	mesg "github.com/mesg-foundation/go-service"
-	"github.com/mesg-foundation/go-service/mesgtest"
+	"github.com/mesg-foundation/core/client/service"
+	"github.com/mesg-foundation/core/client/service/servicetest"
 	"github.com/stretchr/testify/require"
 )
 
@@ -13,17 +13,17 @@ const (
 	endpoint = "endpoint"
 )
 
-func newHTTPServerAndServer(t *testing.T) (*HTTPServerService, *mesgtest.Server) {
-	testServer := mesgtest.NewServer()
-	service, err := mesg.New(
-		mesg.DialOption(testServer.Socket()),
-		mesg.TokenOption(token),
-		mesg.EndpointOption(endpoint),
+func newHTTPServerAndServer(t *testing.T) (*HTTPServerService, *servicetest.Server) {
+	testServer := servicetest.NewServer()
+	s, err := service.New(
+		service.DialOption(testServer.Socket()),
+		service.TokenOption(token),
+		service.EndpointOption(endpoint),
 	)
 	require.NoError(t, err)
-	require.NotNil(t, service)
+	require.NotNil(t, s)
 
-	w, err := New(service, ":0")
+	w, err := New(s, ":0")
 	require.NoError(t, err)
 
 	return w, testServer

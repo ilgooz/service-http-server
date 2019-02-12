@@ -5,8 +5,8 @@ import (
 	"log"
 
 	"github.com/ilgooz/service-http-server/httpserver"
+	"github.com/mesg-foundation/core/client/service"
 	"github.com/mesg-foundation/core/x/xsignal"
-	mesg "github.com/mesg-foundation/go-service"
 )
 
 var (
@@ -16,12 +16,12 @@ var (
 func main() {
 	flag.Parse()
 
-	service, err := mesg.New()
+	s, err := service.New()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	hs, err := httpserver.New(service, *serverAddr)
+	hs, err := httpserver.New(s, *serverAddr)
 	if err != nil {
 		log.Fatal(err)
 	}

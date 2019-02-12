@@ -23,10 +23,7 @@ type session struct {
 }
 
 func newSession(w http.ResponseWriter, req *http.Request) (*session, error) {
-	id, err := uuid.NewV4()
-	if err != nil {
-		return nil, err
-	}
+	id := uuid.NewV4()
 	idStr := id.String()
 	return &session{
 		w:        w,
