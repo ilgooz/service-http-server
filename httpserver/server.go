@@ -2,8 +2,11 @@ package httpserver
 
 import (
 	"context"
+	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/joncalhoun/qson"
 )
 
 func (s *HTTPServerService) startHTTPServer() error {
@@ -31,6 +34,9 @@ type requestEventData struct {
 	// Path is requested page's path.
 	Path string `json:"path"`
 
+	// Body is the request data.
+	Body string `json:"body"`
+
 	// IP address of client.
 	IP string `json:"ip"`
 }
@@ -42,11 +48,31 @@ func (s *HTTPServerService) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 		return
 	}
 	s.addSession(se.id, se)
+
+	var body string
+	qs := req.URL.Query().Encode()
+	if qs != "" {
+		data, err := qson.ToJSON(qs)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		body = string(data)
+	} else {
+		data, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		body = string(data)
+	}
+
 	if err := s.s.Emit(requestEventKey, requestEventData{
 		SessionID: se.id,
 		Method:    req.Method,
 		Host:      req.Host,
 		Path:      req.URL.Path,
+		Body:      body,
 		IP:        req.RemoteAddr,
 	}); err != nil {
 		log.Println(err)

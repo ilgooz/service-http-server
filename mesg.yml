@@ -1,6 +1,7 @@
 name: http-server
 description: serve content over http
 repository: https://github.com/ilgooz/service-http-server
+sid: http-server
 events:
   request:
     description: This event is emited on every page request.
@@ -8,14 +9,17 @@ events:
       sessionID:
         description: Session ID of corresponding page request
         type: String
+      path:
+        description: Path of HTTP request.
+        type: String
       method:
         description: Method of HTTP request.
         type: String
+      body:
+        description: Body of HTTP request.
+        type: Any
       host:
         description: Host of HTTP request.
-        type: String
-      path:
-        description: Path of HTTP request.
         type: String
       ip:
         description: IP address of HTTP request.
