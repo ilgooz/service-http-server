@@ -4,4 +4,5 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 RUN go build ./cli/httpserver/main.go
+EXPOSE 2300
 CMD ["./main"]
