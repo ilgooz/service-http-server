@@ -78,13 +78,13 @@ func testRequest(t *testing.T, server *servicetest.Server, hs *HTTPServerService
 		require.NoError(t, err)
 		require.Equal(t, "success", execution.Key())
 
-		var outputs completeSessionSuccessOutputs
+		var outputs completeSessionSuccessOutput
 		require.NoError(t, execution.Data(&outputs))
 		require.Equal(t, data.SessionID, outputs.SessionID)
 		require.True(t, outputs.ElapsedTime > 0)
 	}()
 
-	resp, err := http.Get(fmt.Sprintf("http://localhost%s%s", hs.ListeningAddr, req.route))
+	resp, err := http.Get(fmt.Sprintf("http://localhost%s%s", hs.ListeningAddr(), req.route))
 	require.NoError(t, err)
 	defer resp.Body.Close()
 	require.Contains(t, resp.Header.Get("content-type"), req.mimeType)

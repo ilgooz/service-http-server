@@ -1,43 +1,42 @@
 package httpserver
 
 import (
-	"fmt"
-	"net"
-	"net/http"
 	"sync"
-	"time"
 
+	"github.com/ilgooz/service-http-server/httpserver/server"
 	"github.com/mesg-foundation/core/client/service"
 )
 
 // HTTPServerService is a MESG service to serve content over HTTP.
 type HTTPServerService struct {
-	s *service.Service
-
-	ListeningAddr         string
-	serverShutdownTimeout time.Duration
-	server                *http.Server
-	ln                    net.Listener
+	service *service.Service
+	server  *server.Server
 
 	// sessions is a request id, session pair.
-	sessions map[string]*session
-	ms       sync.Mutex
+	sessions map[string]*server.Session
+	ms       sync.RWMutex
+
+	caches []*cache
+	mc     sync.RWMutex
 }
 
 // New creates a new http server service with given mesg service.
-func New(service *service.Service, listeningAddr string) (*HTTPServerService, error) {
+func New(mesgService *service.Service, addr string) (*HTTPServerService, error) {
 	s := &HTTPServerService{
-		s:                     service,
-		sessions:              make(map[string]*session),
-		ListeningAddr:         listeningAddr,
-		serverShutdownTimeout: time.Second * 5,
+		service:  mesgService,
+		sessions: make(map[string]*server.Session),
+		caches:   make([]*cache, 0),
 	}
-	ln, err := net.Listen("tcp", s.ListeningAddr)
+	server, err := server.New(addr)
 	if err != nil {
 		return nil, err
 	}
-	s.ln = ln
-	s.ListeningAddr = fmt.Sprintf(":%d", ln.Addr().(*net.TCPAddr).Port)
+	s.server = server
+	go func() {
+		for ses := range s.server.Sessions {
+			go s.handleSession(ses)
+		}
+	}()
 	return s, nil
 }
 
@@ -45,15 +44,30 @@ func New(service *service.Service, listeningAddr string) (*HTTPServerService, er
 func (s *HTTPServerService) Start() error {
 	defer s.Close()
 	errC := make(chan error, 2)
-	go func() { errC <- s.startHTTPServer() }()
+	go func() { errC <- s.server.Listen() }()
 	go func() { errC <- s.listenTasks() }()
-	return <-errC
+	err := <-errC
+	s.Close()
+	return err
+}
+
+func (s *HTTPServerService) ListeningAddr() string {
+	return s.server.ListeningAddr
+}
+
+// listenTasks starts listening for service's tasks.
+func (s *HTTPServerService) listenTasks() error {
+	return s.service.Listen(
+		service.Task("completeSession", s.completeSessionHandler),
+		service.Task("cache", s.cacheHandler),
+		service.Task("breakCache", s.breakCacheHandler),
+	)
 }
 
 // Close gracefully closes the http server service.
 func (s *HTTPServerService) Close() error {
-	if err := s.s.Close(); err != nil {
+	if err := s.service.Close(); err != nil {
 		return err
 	}
-	return s.shutdownHTTPServer()
+	return s.server.Close()
 }

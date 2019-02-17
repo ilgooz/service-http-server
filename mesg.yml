@@ -2,6 +2,11 @@ name: http-server
 description: serve content over http
 repository: https://github.com/ilgooz/service-http-server
 sid: http-server
+configuration:
+  env:
+    - ENABLE_CORS=true
+  ports:
+    - "2300"
 events:
   request:
     description: This event is emited on every page request.
@@ -15,6 +20,9 @@ events:
       method:
         description: Method of HTTP request.
         type: String
+      qs:
+        description: Query string of HTTP request.
+        type: Any
       body:
         description: Body of HTTP request.
         type: Any
@@ -60,6 +68,51 @@ tasks:
         data:
           message:
             type: String
-configuration:
-  ports:
-    - "2300"
+  cache:
+    description: Cache an http request with pre created response
+    inputs:
+      method:
+        description: Method of HTTP request
+        type: String
+      path:
+        description: Path of HTTP request
+        type: String
+      code:
+        description: Status code of HTTP response
+        type: Number
+        optional: true
+      mimeType:
+        description: MIME type of HTTP response
+        type: String
+        optional: true
+      content:
+        description: Content of HTTP response
+        type: String
+        optional: true
+    outputs:
+      success:
+        data:
+          message:
+            type: String
+      error:
+        data:
+          message:
+            type: String
+  breakCache:
+    description: Break cache for http request
+    inputs:
+      path:
+        description: Path of HTTP request to break cache.
+        type: String
+      method:
+        description: Method of HTTP request to break cache.
+        type: String
+    outputs:
+      success:
+        data:
+          message:
+            type: String
+      error:
+        data:
+          message:
+            type: String

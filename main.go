@@ -10,38 +10,38 @@ import (
 )
 
 var (
-	serverAddr = flag.String("serverAddr", ":2300", "Server's listening address")
+	serverAddr = flag.String("serverAddr", ":2300", "address of server")
 )
 
 func main() {
 	flag.Parse()
 
-	s, err := service.New()
+	mesgService, err := service.New()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	hs, err := httpserver.New(s, *serverAddr)
+	s, err := httpserver.New(mesgService, *serverAddr)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// start the http server service.
+	// start the service.
 	go func() {
 		log.Println("http server service has been started")
-		log.Printf("http server listening at %s\n", hs.ListeningAddr)
+		log.Printf("http server listening at %s\n", s.ListeningAddr())
 
-		if err := hs.Start(); err != nil {
+		if err := s.Start(); err != nil {
 			log.Fatal(err)
 		}
 	}()
 
-	// wait for interrupt and gracefully shutdown the http server service.
+	// wait for interrupt and gracefully shutdown the service.
 	<-xsignal.WaitForInterrupt()
 
 	log.Println("shutting down...")
 
-	if err := hs.Close(); err != nil {
+	if err := s.Close(); err != nil {
 		log.Fatal(err)
 	}
 

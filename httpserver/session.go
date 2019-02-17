@@ -1,58 +1,111 @@
 package httpserver
 
 import (
-	"net/http"
-	"time"
+	"log"
+	"os"
 
-	uuid "github.com/satori/go.uuid"
+	"github.com/ilgooz/service-http-server/httpserver/server"
+	"github.com/ilgooz/service-http-server/x/xhttp"
+	"github.com/sirupsen/logrus"
 )
 
-// session keeps request, response writer pair for an HTTP request.
-type session struct {
-	req *http.Request
-	w   http.ResponseWriter
+// requestEventData is request event's data.
+type requestEventData struct {
+	// SessionID is the of corresponding request..
+	SessionID string `json:"sessionID"`
 
-	// id of the session
-	id string
+	// Method is the request's method.
+	Method string `json:"method"`
 
-	// issuedAt is the creation time of session.
-	issuedAt time.Time
+	// Host is the request's host.
+	Host string `json:"host"`
 
-	// waitC blocks http handler until is response sent.
-	waitC chan struct{}
+	// Path is requested page's path.
+	Path string `json:"path"`
+
+	// QS is the query string data.
+	QS string `json:"qs"`
+
+	// Body is the request data.
+	Body string `json:"body"`
+
+	// IP address of client.
+	IP string `json:"ip"`
 }
 
-func newSession(w http.ResponseWriter, req *http.Request) (*session, error) {
-	id := uuid.NewV4()
-	idStr := id.String()
-	return &session{
-		w:        w,
-		req:      req,
-		id:       idStr,
-		issuedAt: time.Now(),
-		waitC:    make(chan struct{}),
-	}, nil
+func (s *HTTPServerService) handleSession(ses *server.Session) {
+	logrus.WithFields(logrus.Fields{
+		"method": ses.Req.Method,
+		"path":   ses.Req.URL.Path,
+	}).Info("new request")
+
+	if os.Getenv("ENABLE_CORS") == "true" {
+		xhttp.CORS(ses.W)
+	}
+
+	if ses.Req.Method == "OPTIONS" {
+		ses.End()
+		return
+	}
+
+	// use cached response if exists.
+	c := s.findCache(ses.Req.Method, ses.Req.URL.Path)
+	if c != nil {
+		if err := sendResponse(ses.W, response{
+			code:     c.code,
+			mimeType: c.mimeType,
+			content:  c.content,
+		}); err != nil {
+			log.Println(err)
+		}
+		ses.End()
+		logrus.WithFields(logrus.Fields{
+			"method": ses.Req.Method,
+			"path":   ses.Req.URL.Path,
+		}).Info("responded from cache")
+		return
+	}
+
+	qs, err := xhttp.JSONQuery(ses.Req)
+	if err != nil {
+		ses.End()
+		log.Println(err)
+		return
+	}
+
+	body, err := xhttp.BodyAll(ses.Req)
+	if err != nil {
+		ses.End()
+		log.Println(err)
+		return
+	}
+
+	s.addSession(ses)
+	if err := s.service.Emit("request", requestEventData{
+		SessionID: ses.ID,
+		Method:    ses.Req.Method,
+		Host:      ses.Req.Host,
+		Path:      ses.Req.URL.Path,
+		QS:        string(qs),
+		Body:      string(body),
+		IP:        ses.Req.RemoteAddr,
+	}); err != nil {
+		log.Println(err)
+		s.removeSession(ses.ID)
+	}
 }
 
-func (s *session) wait() {
-	<-s.waitC
-}
-
-func (s *session) done() {
-	close(s.waitC)
-}
-
-func (s *HTTPServerService) addSession(id string, se *session) {
+func (s *HTTPServerService) addSession(ses *server.Session) {
 	s.ms.Lock()
 	defer s.ms.Unlock()
-	s.sessions[id] = se
+	s.sessions[ses.ID] = ses
 }
 
-func (s *HTTPServerService) getSession(id string) (se *session, found bool) {
-	s.ms.Lock()
-	defer s.ms.Unlock()
-	se, ok := s.sessions[id]
-	return se, ok
+func (s *HTTPServerService) getSession(id string) (ses *server.Session, found bool) {
+	s.ms.RLock()
+	defer s.ms.RUnlock()
+	ses, ok := s.sessions[id]
+	return ses, ok
 }
 
 func (s *HTTPServerService) removeSession(id string) {

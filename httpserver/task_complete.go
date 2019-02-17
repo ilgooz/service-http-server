@@ -2,15 +2,11 @@ package httpserver
 
 import (
 	"errors"
-	"io"
-	"net/http"
-	"strings"
 	"time"
 
 	"github.com/mesg-foundation/core/client/service"
+	"github.com/sirupsen/logrus"
 )
-
-const completeSessionSuccessOutputKey = "success"
 
 type completeSessionInputs struct {
 	// SessionID id of request.
@@ -43,7 +39,7 @@ type completeSessionInputs struct {
 	Content string `json:"content"`
 }
 
-type completeSessionSuccessOutputs struct {
+type completeSessionSuccessOutput struct {
 	SessionID string `json:"sessionID"`
 
 	// ElapsedTime is in nanoseconds.
@@ -55,38 +51,30 @@ type completeSessionSuccessOutputs struct {
 func (s *HTTPServerService) completeSessionHandler(execution *service.Execution) (string, interface{}) {
 	var inputs completeSessionInputs
 	if err := execution.Data(&inputs); err != nil {
-		return newErrorOutput(err)
+		return errorOutputFrom(err)
 	}
 
-	se, found := s.getSession(inputs.SessionID)
+	ses, found := s.getSession(inputs.SessionID)
 	if !found {
-		return newErrorOutput(errors.New("session not found"))
+		return errorOutputFrom(errors.New("session not found"))
 	}
-	defer s.removeSession(se.id)
-	defer se.done()
+	defer s.removeSession(ses.ID)
+	defer ses.End()
 
-	if inputs.MIMEType != "" {
-		se.w.Header().Set("Content-Type", inputs.MIMEType)
+	if err := sendResponse(ses.W, response{
+		mimeType: inputs.MIMEType,
+		code:     inputs.Code,
+		content:  []byte(inputs.Content),
+	}); err != nil {
+		return errorOutputFrom(err)
 	}
+	logrus.WithFields(logrus.Fields{
+		"method": ses.Req.Method,
+		"path":   ses.Req.URL.Path,
+	}).Info("responded")
 
-	if inputs.Code != 0 {
-		se.w.WriteHeader(inputs.Code)
-	} else {
-		se.w.WriteHeader(http.StatusOK)
-	}
-
-	if inputs.Content == "" && inputs.Code != http.StatusOK {
-		if _, err := se.w.Write([]byte(http.StatusText(inputs.Code))); err != nil {
-			return newErrorOutput(err)
-		}
-	} else {
-		if _, err := io.Copy(se.w, strings.NewReader(inputs.Content)); err != nil {
-			return newErrorOutput(err)
-		}
-	}
-
-	return completeSessionSuccessOutputKey, completeSessionSuccessOutputs{
-		SessionID:   se.id,
-		ElapsedTime: time.Since(se.issuedAt),
+	return "success", completeSessionSuccessOutput{
+		SessionID:   ses.ID,
+		ElapsedTime: time.Since(ses.IssuedAt),
 	}
 }
