@@ -55,6 +55,10 @@ tasks:
         description: Content of HTTP response.
         type: String
         optional: true
+      cache:
+        description: Optionally cache this response for same requests.
+        type: Boolean
+        optional: true
     outputs:
       success:
         data:

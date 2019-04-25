@@ -22,19 +22,21 @@ func (s *HTTPServerService) cacheHandler(execution *service.Execution) (string, 
 	if err := execution.Data(&inputs); err != nil {
 		return errorOutputFrom(err)
 	}
-
-	s.deleteCache(inputs.Method, inputs.Path)
-	s.addCache(&cache{
+	s.cache(&cache{
 		method:   inputs.Method,
 		path:     inputs.Path,
 		code:     inputs.Code,
 		mimeType: inputs.MIMEType,
 		content:  []byte(inputs.Content),
 	})
-	logrus.WithFields(logrus.Fields{
-		"method": inputs.Method,
-		"path":   inputs.Path,
-	}).Info("cached")
-
 	return "success", cacheSuccessOutput{"ok"}
+}
+
+func (s *HTTPServerService) cache(c *cache) {
+	s.deleteCache(c.method, c.path)
+	s.addCache(c)
+	logrus.WithFields(logrus.Fields{
+		"method": c.method,
+		"path":   c.path,
+	}).Info("cached")
 }

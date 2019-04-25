@@ -37,6 +37,10 @@ type completeSessionInputs struct {
 	// If Content is empty but MIME type is set, content will be formated
 	// according to that otherwise it will be in plain text.
 	Content string `json:"content"`
+
+	// Cache is an indicator that if this response should be saved to cache
+	// for feature requests with the same properties.
+	Cache bool `json:"cache"`
 }
 
 type completeSessionSuccessOutput struct {
@@ -72,6 +76,16 @@ func (s *HTTPServerService) completeSessionHandler(execution *service.Execution)
 		"method": ses.Req.Method,
 		"path":   ses.Req.URL.Path,
 	}).Info("responded")
+
+	if inputs.Cache {
+		s.cache(&cache{
+			method:   ses.Req.Method,
+			path:     ses.Req.URL.Path,
+			code:     inputs.Code,
+			mimeType: inputs.MIMEType,
+			content:  []byte(inputs.Content),
+		})
+	}
 
 	return "success", completeSessionSuccessOutput{
 		SessionID:   ses.ID,
