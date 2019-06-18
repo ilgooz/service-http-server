@@ -43,7 +43,7 @@ type completeSessionInputs struct {
 	Cache bool `json:"cache"`
 }
 
-type completeSessionSuccessOutput struct {
+type completeSessionOutput struct {
 	SessionID string `json:"sessionID"`
 
 	// ElapsedTime is in nanoseconds.
@@ -52,15 +52,15 @@ type completeSessionSuccessOutput struct {
 
 // completeSessionHandler is a task handler to complete a waiting request by
 // sending a response to it with content, code, headers, MIME types and other configs.
-func (s *HTTPServerService) completeSessionHandler(execution *service.Execution) (string, interface{}) {
+func (s *HTTPServerService) completeSessionHandler(execution *service.Execution) (interface{}, error) {
 	var inputs completeSessionInputs
 	if err := execution.Data(&inputs); err != nil {
-		return errorOutputFrom(err)
+		return nil, err
 	}
 
 	ses, found := s.getSession(inputs.SessionID)
 	if !found {
-		return errorOutputFrom(errors.New("session not found"))
+		return nil, errors.New("session not found")
 	}
 	defer s.removeSession(ses.ID)
 	defer ses.End()
@@ -70,7 +70,7 @@ func (s *HTTPServerService) completeSessionHandler(execution *service.Execution)
 		code:     inputs.Code,
 		content:  []byte(inputs.Content),
 	}); err != nil {
-		return errorOutputFrom(err)
+		return nil, err
 	}
 	logrus.WithFields(logrus.Fields{
 		"method": ses.Req.Method,
@@ -87,8 +87,8 @@ func (s *HTTPServerService) completeSessionHandler(execution *service.Execution)
 		})
 	}
 
-	return "success", completeSessionSuccessOutput{
+	return completeSessionOutput{
 		SessionID:   ses.ID,
 		ElapsedTime: time.Since(ses.IssuedAt),
-	}
+	}, nil
 }

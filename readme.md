@@ -1,42 +1,41 @@
-# http-server
+# http-server (ID: http-server)
 
 serve content over http
 
-# Contents
+## Contents
 
 - [Installation](#Installation)
+  - [MESG Engine](#MESG-Core)
+  - [Deploy the Service](#Service)
 - [Definitions](#Definitions)
   - [Events](#Events)
     - [request](#request)
   - [Tasks](#Tasks)
-    - [breakCache](#breakcache)
+    - [completeSession](#completeSession)
     - [cache](#cache)
-    - [completeSession](#completesession)
+    - [breakCache](#breakCache)
 
-# Installation
+## Installation
 
-## MESG Core
+### MESG Engine
 
-This service requires [MESG Core](https://github.com/mesg-foundation/core) to be installed first.
+This service requires [MESG Engine](https://github.com/mesg-foundation/core) to be installed first.
 
-You can install MESG Core by running the following command or [follow the installation guide](https://docs.mesg.com/guide/start-here/installation.html).
+You can install MESG Engine by running the following command or [follow the installation guide](https://docs.mesg.com/guide/start-here/installation.html).
 
 ```bash
 bash <(curl -fsSL https://mesg.com/install)
 ```
 
-## Service
+### Deploy the Service
 
-To deploy this service, run the following command:
-```bash
-mesg-core service deploy https://github.com/ilgooz/service-http-server
-```
+To deploy this service, go to [this service page](https://marketplace.mesg.com/services/http-server) on the [MESG Marketplace](https://marketplace.mesg.com) and click the button "get/buy this service".
 
-# Definitions
+## Definitions
 
-# Events
+### Events
 
-## request
+#### request
 
 Event key: `request`
 
@@ -44,128 +43,102 @@ This event is emited on every page request.
 
 | **Name** | **Key** | **Type** | **Description** |
 | --- | --- | --- | --- |
+| **sessionID** | `sessionID` | `String` | Session ID of corresponding page request |
+| **path** | `path` | `String` | Path of HTTP request. |
+| **method** | `method` | `String` | Method of HTTP request. |
+| **qs** | `qs` | `Any` | Query string of HTTP request. |
 | **body** | `body` | `Any` | Body of HTTP request. |
 | **host** | `host` | `String` | Host of HTTP request. |
 | **ip** | `ip` | `String` | IP address of HTTP request. |
-| **method** | `method` | `String` | Method of HTTP request. |
-| **path** | `path` | `String` | Path of HTTP request. |
-| **qs** | `qs` | `Any` | Query string of HTTP request. |
-| **sessionID** | `sessionID` | `String` | Session ID of corresponding page request |
 
-# Tasks
+### Tasks
 
-## breakCache
-
-Task key: `breakCache`
-
-Break cache for http request
-
-### Inputs
-
-| **Name** | **Key** | **Type** | **Description** |
-| --- | --- | --- | --- |
-| **method** | `method` | `String` | Method of HTTP request to break cache. |
-| **path** | `path` | `String` | Path of HTTP request to break cache. |
-
-### Outputs
-
-#### error
-
-Output key: `error`
-
-
-
-| **Name** | **Key** | **Type** | **Description** |
-| --- | --- | --- | --- |
-| **message** | `message` | `String` |  |
-
-#### success
-
-Output key: `success`
-
-
-
-| **Name** | **Key** | **Type** | **Description** |
-| --- | --- | --- | --- |
-| **message** | `message` | `String` |  |
-
-
-## cache
-
-Task key: `cache`
-
-Cache an http request with pre created response
-
-### Inputs
-
-| **Name** | **Key** | **Type** | **Description** |
-| --- | --- | --- | --- |
-| **code** | `code` | `Number` | **`optional`** Status code of HTTP response |
-| **content** | `content` | `String` | **`optional`** Content of HTTP response |
-| **method** | `method` | `String` | Method of HTTP request |
-| **mimeType** | `mimeType` | `String` | **`optional`** MIME type of HTTP response |
-| **path** | `path` | `String` | Path of HTTP request |
-
-### Outputs
-
-#### error
-
-Output key: `error`
-
-
-
-| **Name** | **Key** | **Type** | **Description** |
-| --- | --- | --- | --- |
-| **message** | `message` | `String` |  |
-
-#### success
-
-Output key: `success`
-
-
-
-| **Name** | **Key** | **Type** | **Description** |
-| --- | --- | --- | --- |
-| **message** | `message` | `String` |  |
-
-
-## completeSession
+#### completeSession
 
 Task key: `completeSession`
 
 This task should be called to response a pending page requests.
 
-### Inputs
+##### Inputs
 
 | **Name** | **Key** | **Type** | **Description** |
 | --- | --- | --- | --- |
-| **code** | `code` | `Number` | **`optional`** Status code of HTTP response. |
-| **content** | `content` | `String` | **`optional`** Content of HTTP response. |
+| **sessionID** | `sessionID` | `String` | Session ID of corresponding page request |
 | **error** | `error` | `Object` | **`optional`** Error should be used to response with pre-existing errors |
+| **code** | `code` | `Number` | **`optional`** Status code of HTTP response. |
 | **mimeType** | `mimeType` | `String` | **`optional`** MIME type of HTTP response. |
-| **sessionID** | `sessionID` | `String` | Session ID of corresponding page request |
+| **content** | `content` | `String` | **`optional`** Content of HTTP response. |
+| **cache** | `cache` | `Boolean` | **`optional`** Optionally cache this response for same requests. |
+  
+##### Outputs
 
-### Outputs
+###### sessionID
 
-#### error
+Output key: `sessionID`
 
-Output key: `error`
+Session ID of corresponding page request
+
+| **Name** | **Key** | **Type** | **Description** |
+| --- | --- | --- | --- |
+
+###### elapsedTime
+
+Output key: `elapsedTime`
+
+Elapsed time in nanoseconds for page request to complete
+
+| **Name** | **Key** | **Type** | **Description** |
+| --- | --- | --- | --- |
+
+#### cache
+
+Task key: `cache`
+
+Cache an http request with pre created response
+
+##### Inputs
+
+| **Name** | **Key** | **Type** | **Description** |
+| --- | --- | --- | --- |
+| **method** | `method` | `String` | Method of HTTP request |
+| **path** | `path` | `String` | Path of HTTP request |
+| **code** | `code` | `Number` | **`optional`** Status code of HTTP response |
+| **mimeType** | `mimeType` | `String` | **`optional`** MIME type of HTTP response |
+| **content** | `content` | `String` | **`optional`** Content of HTTP response |
+  
+##### Outputs
+
+###### message
+
+Output key: `message`
 
 
 
 | **Name** | **Key** | **Type** | **Description** |
 | --- | --- | --- | --- |
-| **message** | `message` | `String` |  |
 
-#### success
+#### breakCache
 
-Output key: `success`
+Task key: `breakCache`
+
+Break cache for http request
+
+##### Inputs
+
+| **Name** | **Key** | **Type** | **Description** |
+| --- | --- | --- | --- |
+| **path** | `path` | `String` | Path of HTTP request to break cache. |
+| **method** | `method` | `String` | Method of HTTP request to break cache. |
+  
+##### Outputs
+
+###### message
+
+Output key: `message`
 
 
 
 | **Name** | **Key** | **Type** | **Description** |
 | --- | --- | --- | --- |
-| **elapsedTime** | `elapsedTime` | `Number` | Elapsed time in nanoseconds for page request to complete |
-| **sessionID** | `sessionID` | `String` | Session ID of corresponding page request |
 
 

@@ -76,9 +76,8 @@ func testRequest(t *testing.T, server *servicetest.Server, hs *HTTPServerService
 			MIMEType:  req.setMIMEType,
 		})
 		require.NoError(t, err)
-		require.Equal(t, "success", execution.Key())
 
-		var outputs completeSessionSuccessOutput
+		var outputs completeSessionOutput
 		require.NoError(t, execution.Data(&outputs))
 		require.Equal(t, data.SessionID, outputs.SessionID)
 		require.True(t, outputs.ElapsedTime > 0)
@@ -94,25 +93,4 @@ func testRequest(t *testing.T, server *servicetest.Server, hs *HTTPServerService
 	require.Equal(t, req.content, string(data))
 
 	wg.Wait()
-}
-
-func TestCompleteSessionError(t *testing.T) {
-	var (
-		data = completeSessionInputs{
-			SessionID: "not-exists",
-		}
-		hs, server = newHTTPServerAndServer(t)
-	)
-
-	go server.Start()
-	go hs.Start()
-	defer hs.Close()
-
-	_, execution, err := server.Execute("completeSession", data)
-	require.NoError(t, err)
-	require.Equal(t, "error", execution.Key())
-
-	var outputs errorOutput
-	require.NoError(t, execution.Data(&outputs))
-	require.Contains(t, "session not found", outputs.Message)
 }

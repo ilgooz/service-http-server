@@ -60,18 +60,12 @@ tasks:
         type: Boolean
         optional: true
     outputs:
-      success:
-        data:
-          sessionID:
-            description: Session ID of corresponding page request
-            type: String
-          elapsedTime:
-            description: Elapsed time in nanoseconds for page request to complete
-            type: Number
-      error:
-        data:
-          message:
-            type: String
+      sessionID:
+        description: Session ID of corresponding page request
+        type: String
+      elapsedTime:
+        description: Elapsed time in nanoseconds for page request to complete
+        type: Number
   cache:
     description: Cache an http request with pre created response
     inputs:
@@ -94,14 +88,8 @@ tasks:
         type: String
         optional: true
     outputs:
-      success:
-        data:
-          message:
-            type: String
-      error:
-        data:
-          message:
-            type: String
+      message:
+        type: String
   breakCache:
     description: Break cache for http request
     inputs:
@@ -112,11 +100,5 @@ tasks:
         description: Method of HTTP request to break cache.
         type: String
     outputs:
-      success:
-        data:
-          message:
-            type: String
-      error:
-        data:
-          message:
-            type: String
+      message:
+        type: String
